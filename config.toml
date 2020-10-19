@@ -25,10 +25,10 @@ disqusShortname = ""
   # Link custom assets relative to /static
   custom_css = []
   custom_js  = []
-  favicon    = "favicon.ico"
+  favicon    = "pic09.jpg"
 
   # Just a custom image variable, please define it in .md files for content.
-  image = ""
+  image = "pic09.jpg"
 
   # 404 error customization
   [params.error404]
@@ -41,7 +41,7 @@ disqusShortname = ""
     subtitle = "Personal Projects"
     menu = "Menu"
     # Optional logo as brand stored in img/
-    # logo = "logo.png"
+    #logo = "pic09.jpg"
 
     [[params.navigation.links]]
       name = "Home"
@@ -82,7 +82,7 @@ disqusShortname = ""
     # To change the background image on the homepage banner, replace 'banner.jpg' in
     # the 'static/img' folder.
     title = "Antonia's Portfolio Website"
-    subtitle = "A RESPONSIVE SITE TEMPLATE DESIGNED BY HTML5 UP\nAND RELEASED UNDER THE CREATIVE COMMONS."
+    subtitle = "Please have a look at my personal projects that I have worked on!"
     buttonText = "Get Started"
 
 
@@ -92,28 +92,28 @@ disqusShortname = ""
     # Display your showcases here.
     
     [[params.tiles.showcase]]
-      title = "Aliquam"
-      subtitle = "Ipsum Dolor Sit Amet"
-      image = "pic01.jpg"
-      url = "blogs/aliquam"
+      title = "US Presidents"
+      subtitle = "Analysing Trump and Obama"
+      image = "pic07.jpg"
+      url = "blogs/presidents"
 
     [[params.tiles.showcase]]
-      title = "Tempus"
-      subtitle = "Feugiat Amet Tempus"
-      image = "pic02.jpg"
-      url = "blogs/tempus"
+      title = "Atheism around the World"
+      subtitle = "A visualisation of atheism"
+      image = "pic08.jpg"
+      url = "blogs/blog7"
 
     [[params.tiles.showcase]]
-      title = "Magna"
-      subtitle = "Lorem Etiam Nullam"
-      image = "pic03.jpg"
-      url = "blogs/magna"
+      title = "TfL Bike Rental"
+      subtitle = "Analysis on TfL Bikes rented in London"
+      image = "pic10.jpg"
+      url = "blogs/blog6"
 
     [[params.tiles.showcase]]
-      title = "Ipsum"
-      subtitle = "Nisl Sed Aliquam"
-      image = "pic04.jpg"
-      url = "blogs/ipsum"
+      title = "Dual Share Class Arbitrage"
+      subtitle = "How to time your long/short position"
+      image = "pic11.jpg"
+      url = "blogs/blog5"
 
     [[params.tiles.showcase]]
       title = "Consequat"

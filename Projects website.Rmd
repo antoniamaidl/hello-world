@@ -1,0 +1,101 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse) 
+library(mosaic)
+library(ggthemes)
+library(lubridate)
+library(here)
+library(skimr)
+library(janitor)
+library(httr)
+library(readxl)
+library(vroom)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r Atheism}
+# Import atheism data
+atheism_data <- read_csv(here::here('data', 'atheism.csv'))
+
+#changing input to if response is atheist, then "yes" for non-atheist "no"
+clean_atheism2012 <- atheism_data %>%
+filter(year==2012) %>%
+group_by(nationality, response) %>%
+summarise(count = n()) %>%
+pivot_wider(names_from = response, values_from = count) %>%
+mutate_if(is.numeric, funs(ifelse(is.na(.), 0, .))) 
+  
+colnames(clean_atheism2012) <- c("country","no_atheist", "atheist") 
+
+ratio_atheism <- clean_atheism2012 %>%
+summarise(ratio=(atheist)/(no_atheist)) %>%
+arrange(desc(ratio)) 
+
+ratio_plot <- ggplot(ratio_atheism, aes(x=reorder(country, -ratio), y=ratio)) + geom_point()+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+ratio_plot
+
+  
+
+
+atheism_germany <- atheism_data %>%
+filter(nationality=="Germany") %>%
+  group_by(response, year) %>%
+  summarise(count=n())
+
+bp_germany<- ggplot(atheism_germany, aes(x="", y=count, fill=response))+
+geom_bar(width = 1, stat = "identity") + facet_wrap(~ year)
+bp_germany
+
+atheism_italy <- atheism_data %>%
+filter(nationality=="Italy") %>%
+  group_by(response, year) %>%
+  summarise(count = n())
+
+bp_italy<- ggplot(atheism_italy, aes(x="", y=count, fill=response))+
+geom_bar(width = 1, stat = "identity") + facet_wrap(~ year)
+bp_italy
+```
+
+
+
+```{r presidents, echo=FALSE}
+
+# Import approval polls data
+approval_polllist <- read_csv(here::here('data', 'approval_polllist-2.csv'))
+
+# Use `lubridate` to fix dates, as they are given as characters.
+
+approval_polllist$modeldate <- mdy(approval_polllist$modeldate)
+approval_polllist$startdate <- mdy(approval_polllist$startdate)
+approval_polllist$enddate <- mdy(approval_polllist$enddate)
+approval_polllist$createddate <- mdy(approval_polllist$createddate)
+approval_polllist$timestamp <- parse_date_time(approval_polllist$timestamp, "hmsdmy")
+
+net_approval <- approval_polllist %>%
+  filter(subgroup == "Voters") %>%
+mutate(year=year(enddate), week=isoweek(enddate), approval_margin=approve - disapprove)
+
+nap_data <- net_approval %>%
+group_by(year, week) %>%
+summarise(mean_approval_margin = mean(approval_margin),
+            sd_approval_margin = sd(approval_margin),
+            count = n(),
+            se_approval_margin = sd(approval_margin)/sqrt(count),
+            margin_of_error = qt(0.975,count-1) * se_approval_margin,
+            approval_margin_low = mean_approval_margin - margin_of_error,
+            approval_margin_high = mean_approval_margin + margin_of_error) %>%
+  filter(count>1)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

@@ -1,0 +1,338 @@
+---
+categories:
+- ""
+- ""
+date: "2020-10-01T21:28:43-05:00"
+description: ""
+draft: false
+image: risk_vs_return.jpeg
+keywords: ""
+slug: riskvreturn
+title: Financial Returns across DJIA
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(mosaic)
+library(ggthemes)
+library(lubridate)
+library(here)
+library(skimr)
+library(janitor)
+library(httr)
+library(readxl)
+library(vroom)
+```
+
+Dual-class shares are common stock of a company, listed under different share classes, commonly with same cashflow rights but different voting rights. Historically, these multiple share classes have been intended to allow founders or founding families to maintain control over the company after the initial public offering, as well as to guarantee independence, which particularly applies to firms within the media industry. (Schultz and Shive, 2010)
+
+We want to figure out whether investors should adapt a specific strategy to trade on dual class arbitrage. 
+
+
+```{r Under Armour}
+Under_Armour <- read_csv("~/Downloads/Price Data/Under Armour.csv")
+
+colnames(Under_Armour) <- c("X1", "Date", "UAA", "UA", "Ratio")
+
+UA <- Under_Armour %>%
+select(Date, UAA, UA, Ratio)
+
+glimpse(UA)
+
+UA$Date <- ymd(UA$Date)
+
+UA_avg <- UA %>%
+mutate(day=day(Date), month=month(Date))
+
+UA_final <- UA_avg %>%
+group_by(day, month) %>%
+summarise(average=mean(Ratio))
+```
+
+
+```{r Berkshire}
+Berkshire <- read_csv("~/Downloads/Price Data/Berkshire.csv")
+
+colnames(Berkshire) <- c("X1", "Date", "UAA", "UA", "Ratio")
+
+BH <- Berkshire %>%
+select(Date, UAA, UA, Ratio)
+
+BH$Date <- ymd(BH$Date)
+
+#we need to filter the dates for Berkshire Hathaway as Under Armour is the youngest data set and only starts on the 23rd of March 2016
+
+BH_avg <- BH %>%
+filter(between(Date, as.Date("2016-03-23"),as.Date("2020-10-18"))) %>%
+mutate(day=day(Date), month=month(Date))
+
+BH_final <- BH_avg %>%
+group_by(day, month) %>%
+summarise(average=mean(Ratio))
+
+```
+
+```{r}
+Brown_Forman <- read_csv("~/Downloads/Price Data/Brown-Forman.csv")
+
+colnames(Brown_Forman) <- c("X1", "Date", "UAA", "UA", "Ratio")
+
+BF <- Brown_Forman %>%
+select(Date, UAA, UA, Ratio)
+
+BF$Date <- ymd(BF$Date)
+
+#we need to filter the dates for Brown Forman as Under Armour is the youngest data set and only starts on the 23rd of March 2016
+
+BF_avg <- BF %>%
+filter(between(Date, as.Date("2016-03-23"),as.Date("2020-10-18"))) %>%
+mutate(day=day(Date), month=month(Date))
+
+BF_final <- BF_avg %>%
+group_by(day, month) %>%
+summarise(average=mean(Ratio))
+```
+
+
+```{r}
+Constellation <- read_csv("~/Downloads/Price Data/Constellation Brands.csv")
+
+colnames(Constellation) <- c("X1", "Date", "UAA", "UA", "Ratio")
+
+CB <- Constellation %>%
+select(Date, UAA, UA, Ratio)
+
+CB$Date <- ymd(CB$Date)
+
+#we need to filter the dates for Brown Forman as Under Armour is the youngest data set and only starts on the 23rd of March 2016
+
+CB_avg <- CB %>%
+filter(between(Date, as.Date("2016-03-23"),as.Date("2020-10-18"))) %>%
+mutate(day=day(Date), month=month(Date))
+
+CB_final <- CB_avg %>%
+group_by(day, month) %>%
+summarise(average=mean(Ratio))
+```
+
+
+```{r}
+Crawford <- read_csv("~/Downloads/Price Data/Crawford.csv")
+
+colnames(Crawford) <- c("X1", "Date", "UAA", "UA", "Ratio")
+
+CF <- Crawford%>%
+select(Date, UAA, UA, Ratio)
+
+CF$Date <- ymd(CF$Date)
+
+#we need to filter the dates for Brown Forman as Under Armour is the youngest data set and only starts on the 23rd of March 2016
+
+CF_avg <- CF %>%
+filter(between(Date, as.Date("2016-03-23"),as.Date("2020-10-18"))) %>%
+mutate(day=day(Date), month=month(Date))
+
+CF_final <- CF_avg %>%
+group_by(day, month) %>%
+summarise(average=mean(Ratio))
+```
+```{r}
+Google <- read_csv("~/Downloads/Price Data/Google.csv")
+
+colnames(Google) <- c("X1", "Date", "UAA", "UA", "Ratio")
+
+GG <- Google%>%
+select(Date, UAA, UA, Ratio)
+
+GG$Date <- ymd(GG$Date)
+
+#we need to filter the dates for Brown Forman as Under Armour is the youngest data set and only starts on the 23rd of March 2016
+
+GG_avg <- GG %>%
+filter(between(Date, as.Date("2016-03-23"),as.Date("2020-10-18"))) %>%
+mutate(day=day(Date), month=month(Date))
+
+GG_final <- GG_avg %>%
+group_by(day, month) %>%
+summarise(average=mean(Ratio))
+```
+
+```{r}
+Heico <- read_csv("~/Downloads/Price Data/Heico.csv")
+
+colnames(Heico) <- c("X1", "Date", "UAA", "UA", "Ratio")
+
+HC <- Heico%>%
+select(Date, UAA, UA, Ratio)
+
+HC$Date <- ymd(HC$Date)
+
+#we need to filter the dates for Brown Forman as Under Armour is the youngest data set and only starts on the 23rd of March 2016
+
+HC_avg <- HC %>%
+filter(between(Date, as.Date("2016-03-23"),as.Date("2020-10-18"))) %>%
+mutate(day=day(Date), month=month(Date))
+
+HC_final <- HC_avg %>%
+group_by(day, month) %>%
+summarise(average=mean(Ratio))
+```
+
+```{r}
+John_Wiley <- read_csv("~/Downloads/Price Data/John Wiley.csv")
+
+colnames(John_Wiley) <- c("X1", "Date", "UAA", "UA", "Ratio")
+
+JW <- John_Wiley%>%
+select(Date, UAA, UA, Ratio)
+
+JW$Date <- ymd(JW$Date)
+
+#we need to filter the dates for Brown Forman as Under Armour is the youngest data set and only starts on the 23rd of March 2016
+
+JW_avg <- JW %>%
+filter(between(Date, as.Date("2016-03-23"),as.Date("2020-10-18"))) %>%
+mutate(day=day(Date), month=month(Date))
+
+JW_final <- JW_avg %>%
+group_by(day, month) %>%
+summarise(average=mean(Ratio))
+```
+
+```{r}
+McCormick <- read_csv("~/Downloads/Price Data/McCormick.csv")
+
+colnames(McCormick) <- c("X1", "Date", "UAA", "UA", "Ratio")
+
+MCC <- McCormick%>%
+select(Date, UAA, UA, Ratio)
+
+MCC$Date <- ymd(MCC$Date)
+
+#we need to filter the dates for Brown Forman as Under Armour is the youngest data set and only starts on the 23rd of March 2016
+
+MCC_avg <- MCC %>%
+filter(between(Date, as.Date("2016-03-23"),as.Date("2020-10-18"))) %>%
+mutate(day=day(Date), month=month(Date))
+
+MCC_final <- MCC_avg %>%
+group_by(day, month) %>%
+summarise(average=mean(Ratio))
+```
+
+```{r}
+Molson_Coors <- read_csv("~/Downloads/Price Data/Molson Coors.csv")
+
+colnames(Molson_Coors) <- c("X1", "Date", "UAA", "UA", "Ratio")
+
+MLC <- Molson_Coors%>%
+select(Date, UAA, UA, Ratio)
+
+MLC$Date <- ymd(MLC$Date)
+
+#we need to filter the dates for Brown Forman as Under Armour is the youngest data set and only starts on the 23rd of March 2016
+
+MLC_avg <- MLC %>%
+filter(between(Date, as.Date("2016-03-23"),as.Date("2020-10-18"))) %>%
+mutate(day=day(Date), month=month(Date))
+
+MLC_final <- MLC_avg %>%
+group_by(day, month) %>%
+summarise(average=mean(Ratio))
+```
+
+```{r}
+Pro_Insurance <- read_csv("~/Downloads/Price Data/Protective Insurance.csv")
+
+colnames(Pro_Insurance) <- c("X1", "Date", "UAA", "UA", "Ratio")
+
+PI <- Pro_Insurance%>%
+select(Date, UAA, UA, Ratio)
+
+PI$Date <- ymd(PI$Date)
+
+#we need to filter the dates for Brown Forman as Under Armour is the youngest data set and only starts on the 23rd of March 2016
+
+PI_avg <- PI %>%
+filter(between(Date, as.Date("2016-03-23"),as.Date("2020-10-18"))) %>%
+mutate(day=day(Date), month=month(Date))
+
+PI_final <- PI_avg %>%
+group_by(day, month) %>%
+summarise(average=mean(Ratio))
+```
+
+```{r}
+Seneca <- read_csv("~/Downloads/Price Data/Seneca Foods.csv")
+
+colnames(Seneca) <- c("X1", "Date", "UAA", "UA", "Ratio")
+
+SC <- Seneca%>%
+select(Date, UAA, UA, Ratio)
+
+SC$Date <- ymd(SC$Date)
+
+#we need to filter the dates for Brown Forman as Under Armour is the youngest data set and only starts on the 23rd of March 2016
+
+SC_avg <- SC %>%
+filter(between(Date, as.Date("2016-03-23"),as.Date("2020-10-18"))) %>%
+mutate(day=day(Date), month=month(Date))
+
+SC_final <- SC_avg %>%
+group_by(day, month) %>%
+summarise(average=mean(Ratio))
+```
+
+```{r}
+Zillow <- read_csv("~/Downloads/Price Data/Zillow.csv")
+
+colnames(Zillow) <- c("X1", "Date", "UAA", "UA", "Ratio")
+
+ZW <- Zillow%>%
+select(Date, UAA, UA, Ratio)
+
+ZW$Date <- ymd(ZW$Date)
+
+#we need to filter the dates for Brown Forman as Under Armour is the youngest data set and only starts on the 23rd of March 2016
+
+ZW_avg <- ZW %>%
+filter(between(Date, as.Date("2016-03-23"),as.Date("2020-10-18"))) %>%
+mutate(day=day(Date), month=month(Date))
+
+ZW_final <- ZW_avg %>%
+group_by(day, month) %>%
+summarise(average=mean(Ratio))
+
+glimpse(ZW_final)
+```
+
+```{r}
+library(data.table)
+```
+
+
+
+
+```{r}
+library(abind)
+table <- do.call("rbind",list(HC_final, JW_final, MCC_final, BF_final, BH_final, CB_final, CF_final, GG_final, MLC_final, PI_final, SC_final, UA_final, ZW_final))
+
+new_table <- table %>%
+group_by(day, month) %>%
+summarise(avg=mean(average))
+
+new_table$Date <- as.Date(paste(new_table$month , new_table$day , sep = "." )  , format = "%m.%d" )
+
+glimpse(new_table)
+
+range(new_table$avg)
+
+new_table
+
+ggplot(new_table, aes(x=Date, y=avg, group=1)) + geom_line() + theme_minimal() + scale_x_date(date_labels = "%b", date_breaks = "month", name = "Month", limits=as.Date(c("2020-01-01", "2020-12-31"))) +  theme(axis.title.x=element_blank(),plot.title = element_text(size=10, face="bold"), plot.subtitle = element_text(size=9), axis.title = element_text(size=8)) + labs(title="Average Ratio for each Day of the Month", subtitle="Calculated across Sample Companies starting from 23rd of March 2016 to Date", y="Voting/Non-Voting Share Class")
+```
+
+>The daily historical average ratio varies greatly on a daily basis ranging between 0.9996 and 1.0569. Ratios peak and decline multiple times throughout the month thus enabling investors to close multiple long/short positions throughout the month. Particularly relevant is the visual observation that ratios don’t maintain peaks for a long amount of time but bounce back down fairly quickly, which suggests that once the investor has identified a peak and sets up the long/short position, the ratio has quickly declined in the past, thus returning positive gains to the investor, who closes once a dip has been reached. The chart also suggests that investors could hold the long/short position for a longer period of time than the next dip, and close positions on any subsequent dip, as ratios show little movement above and beyond the total annual range. However, past performance doesn’t predict future performance, therefore the chart may look different in the future than it did with historical data.
+

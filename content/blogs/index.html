@@ -1,0 +1,471 @@
+
+
+<p>Dual-class shares are common stock of a company, listed under different share classes, commonly with same cashflow rights but different voting rights. Historically, these multiple share classes have been intended to allow founders or founding families to maintain control over the company after the initial public offering, as well as to guarantee independence, which particularly applies to firms within the media industry. (Schultz and Shive, 2010)</p>
+<p>We want to figure out whether investors should adapt a specific strategy to trade on dual class arbitrage.</p>
+<pre class="r"><code>Under_Armour &lt;- read_csv(&quot;~/Downloads/Price Data/Under Armour.csv&quot;)</code></pre>
+<pre><code>## Warning: Missing column names filled in: &#39;X1&#39; [1]</code></pre>
+<pre><code>## 
+## ── Column specification ────────────────────────────────────────────────────────
+## cols(
+##   X1 = col_double(),
+##   Date = col_date(format = &quot;&quot;),
+##   `UAA US Equity` = col_double(),
+##   `UA US Equity` = col_double(),
+##   `UAA US Equity / UA US Equity` = col_double(),
+##   SMA_21 = col_double(),
+##   SMA_50 = col_double(),
+##   SMA_120 = col_double()
+## )</code></pre>
+<pre class="r"><code>colnames(Under_Armour) &lt;- c(&quot;X1&quot;, &quot;Date&quot;, &quot;UAA&quot;, &quot;UA&quot;, &quot;Ratio&quot;)
+
+UA &lt;- Under_Armour %&gt;%
+select(Date, UAA, UA, Ratio)
+
+glimpse(UA)</code></pre>
+<pre><code>## Rows: 1,152
+## Columns: 4
+## $ Date  &lt;date&gt; 2016-03-23, 2016-03-24, 2016-03-28, 2016-03-29, 2016-03-30, 20…
+## $ UAA   &lt;dbl&gt; 42.8138, 42.4419, 42.8448, 43.1392, 44.2395, 43.8211, 43.7540, …
+## $ UA    &lt;dbl&gt; 41.2075, 40.5820, 40.5820, 40.5820, 41.7040, 41.4260, 40.8004, …
+## $ Ratio &lt;dbl&gt; 1.0390, 1.0458, 1.0558, 1.0630, 1.0608, 1.0578, 1.0724, 1.0645,…</code></pre>
+<pre class="r"><code>UA$Date &lt;- ymd(UA$Date)
+
+UA_avg &lt;- UA %&gt;%
+mutate(day=day(Date), month=month(Date))
+
+UA_final &lt;- UA_avg %&gt;%
+group_by(day, month) %&gt;%
+summarise(average=mean(Ratio))</code></pre>
+<pre><code>## `summarise()` regrouping output by &#39;day&#39; (override with `.groups` argument)</code></pre>
+<pre class="r"><code>Berkshire &lt;- read_csv(&quot;~/Downloads/Price Data/Berkshire.csv&quot;)</code></pre>
+<pre><code>## Warning: Missing column names filled in: &#39;X1&#39; [1]</code></pre>
+<pre><code>## 
+## ── Column specification ────────────────────────────────────────────────────────
+## cols(
+##   X1 = col_double(),
+##   Date = col_date(format = &quot;&quot;),
+##   `BRK/A US Equity  (R1)` = col_double(),
+##   `BRK/B US Equity  (L1)` = col_double(),
+##   `BRK/A US Equity / BRK/B US Equity (1500 scaled)` = col_double(),
+##   SMA_21 = col_double(),
+##   SMA_50 = col_double(),
+##   SMA_120 = col_double()
+## )</code></pre>
+<pre class="r"><code>colnames(Berkshire) &lt;- c(&quot;X1&quot;, &quot;Date&quot;, &quot;UAA&quot;, &quot;UA&quot;, &quot;Ratio&quot;)
+
+BH &lt;- Berkshire %&gt;%
+select(Date, UAA, UA, Ratio)
+
+BH$Date &lt;- ymd(BH$Date)
+
+#we need to filter the dates for Berkshire Hathaway as Under Armour is the youngest data set and only starts on the 23rd of March 2016
+
+BH_avg &lt;- BH %&gt;%
+filter(between(Date, as.Date(&quot;2016-03-23&quot;),as.Date(&quot;2020-10-18&quot;))) %&gt;%
+mutate(day=day(Date), month=month(Date))
+
+BH_final &lt;- BH_avg %&gt;%
+group_by(day, month) %&gt;%
+summarise(average=mean(Ratio))</code></pre>
+<pre><code>## `summarise()` regrouping output by &#39;day&#39; (override with `.groups` argument)</code></pre>
+<pre class="r"><code>Brown_Forman &lt;- read_csv(&quot;~/Downloads/Price Data/Brown-Forman.csv&quot;)</code></pre>
+<pre><code>## Warning: Missing column names filled in: &#39;X1&#39; [1]</code></pre>
+<pre><code>## 
+## ── Column specification ────────────────────────────────────────────────────────
+## cols(
+##   X1 = col_double(),
+##   Date = col_date(format = &quot;&quot;),
+##   `BF/A US Equity` = col_double(),
+##   `BF/B US Equity` = col_double(),
+##   `BF/A US Equity / BF/B US Equity` = col_double(),
+##   SMA_21 = col_double(),
+##   SMA_50 = col_double(),
+##   SMA_120 = col_double()
+## )</code></pre>
+<pre class="r"><code>colnames(Brown_Forman) &lt;- c(&quot;X1&quot;, &quot;Date&quot;, &quot;UAA&quot;, &quot;UA&quot;, &quot;Ratio&quot;)
+
+BF &lt;- Brown_Forman %&gt;%
+select(Date, UAA, UA, Ratio)
+
+BF$Date &lt;- ymd(BF$Date)
+
+#we need to filter the dates for Brown Forman as Under Armour is the youngest data set and only starts on the 23rd of March 2016
+
+BF_avg &lt;- BF %&gt;%
+filter(between(Date, as.Date(&quot;2016-03-23&quot;),as.Date(&quot;2020-10-18&quot;))) %&gt;%
+mutate(day=day(Date), month=month(Date))
+
+BF_final &lt;- BF_avg %&gt;%
+group_by(day, month) %&gt;%
+summarise(average=mean(Ratio))</code></pre>
+<pre><code>## `summarise()` regrouping output by &#39;day&#39; (override with `.groups` argument)</code></pre>
+<pre class="r"><code>Constellation &lt;- read_csv(&quot;~/Downloads/Price Data/Constellation Brands.csv&quot;)</code></pre>
+<pre><code>## Warning: Missing column names filled in: &#39;X1&#39; [1]</code></pre>
+<pre><code>## 
+## ── Column specification ────────────────────────────────────────────────────────
+## cols(
+##   X1 = col_double(),
+##   Date = col_date(format = &quot;&quot;),
+##   `STZ US Equity` = col_double(),
+##   `STZ/B US Equity` = col_double(),
+##   `STZ US Equity / STZ/B US Equity` = col_double(),
+##   SMA_21 = col_double(),
+##   SMA_50 = col_double(),
+##   SMA_120 = col_double()
+## )</code></pre>
+<pre class="r"><code>colnames(Constellation) &lt;- c(&quot;X1&quot;, &quot;Date&quot;, &quot;UAA&quot;, &quot;UA&quot;, &quot;Ratio&quot;)
+
+CB &lt;- Constellation %&gt;%
+select(Date, UAA, UA, Ratio)
+
+CB$Date &lt;- ymd(CB$Date)
+
+#we need to filter the dates for Brown Forman as Under Armour is the youngest data set and only starts on the 23rd of March 2016
+
+CB_avg &lt;- CB %&gt;%
+filter(between(Date, as.Date(&quot;2016-03-23&quot;),as.Date(&quot;2020-10-18&quot;))) %&gt;%
+mutate(day=day(Date), month=month(Date))
+
+CB_final &lt;- CB_avg %&gt;%
+group_by(day, month) %&gt;%
+summarise(average=mean(Ratio))</code></pre>
+<pre><code>## `summarise()` regrouping output by &#39;day&#39; (override with `.groups` argument)</code></pre>
+<pre class="r"><code>Crawford &lt;- read_csv(&quot;~/Downloads/Price Data/Crawford.csv&quot;)</code></pre>
+<pre><code>## Warning: Missing column names filled in: &#39;X1&#39; [1]</code></pre>
+<pre><code>## 
+## ── Column specification ────────────────────────────────────────────────────────
+## cols(
+##   X1 = col_double(),
+##   Date = col_date(format = &quot;&quot;),
+##   `CRD/A US Equity` = col_double(),
+##   `CRD/B US Equity` = col_double(),
+##   `CRD/A US Equity / CRD/B US Equity` = col_double(),
+##   SMA_21 = col_double(),
+##   SMA_50 = col_double(),
+##   SMA_120 = col_double()
+## )</code></pre>
+<pre class="r"><code>colnames(Crawford) &lt;- c(&quot;X1&quot;, &quot;Date&quot;, &quot;UAA&quot;, &quot;UA&quot;, &quot;Ratio&quot;)
+
+CF &lt;- Crawford%&gt;%
+select(Date, UAA, UA, Ratio)
+
+CF$Date &lt;- ymd(CF$Date)
+
+#we need to filter the dates for Brown Forman as Under Armour is the youngest data set and only starts on the 23rd of March 2016
+
+CF_avg &lt;- CF %&gt;%
+filter(between(Date, as.Date(&quot;2016-03-23&quot;),as.Date(&quot;2020-10-18&quot;))) %&gt;%
+mutate(day=day(Date), month=month(Date))
+
+CF_final &lt;- CF_avg %&gt;%
+group_by(day, month) %&gt;%
+summarise(average=mean(Ratio))</code></pre>
+<pre><code>## `summarise()` regrouping output by &#39;day&#39; (override with `.groups` argument)</code></pre>
+<pre class="r"><code>Google &lt;- read_csv(&quot;~/Downloads/Price Data/Google.csv&quot;)</code></pre>
+<pre><code>## Warning: Missing column names filled in: &#39;X1&#39; [1]</code></pre>
+<pre><code>## 
+## ── Column specification ────────────────────────────────────────────────────────
+## cols(
+##   X1 = col_double(),
+##   Date = col_date(format = &quot;&quot;),
+##   `GOOGL US Equity` = col_double(),
+##   `GOOG US Equity` = col_double(),
+##   `GOOGL US Equity / GOOG US Equity` = col_double(),
+##   SMA_21 = col_double(),
+##   SMA_50 = col_double(),
+##   SMA_120 = col_double()
+## )</code></pre>
+<pre class="r"><code>colnames(Google) &lt;- c(&quot;X1&quot;, &quot;Date&quot;, &quot;UAA&quot;, &quot;UA&quot;, &quot;Ratio&quot;)
+
+GG &lt;- Google%&gt;%
+select(Date, UAA, UA, Ratio)
+
+GG$Date &lt;- ymd(GG$Date)
+
+#we need to filter the dates for Brown Forman as Under Armour is the youngest data set and only starts on the 23rd of March 2016
+
+GG_avg &lt;- GG %&gt;%
+filter(between(Date, as.Date(&quot;2016-03-23&quot;),as.Date(&quot;2020-10-18&quot;))) %&gt;%
+mutate(day=day(Date), month=month(Date))
+
+GG_final &lt;- GG_avg %&gt;%
+group_by(day, month) %&gt;%
+summarise(average=mean(Ratio))</code></pre>
+<pre><code>## `summarise()` regrouping output by &#39;day&#39; (override with `.groups` argument)</code></pre>
+<pre class="r"><code>Heico &lt;- read_csv(&quot;~/Downloads/Price Data/Heico.csv&quot;)</code></pre>
+<pre><code>## Warning: Missing column names filled in: &#39;X1&#39; [1]</code></pre>
+<pre><code>## 
+## ── Column specification ────────────────────────────────────────────────────────
+## cols(
+##   X1 = col_double(),
+##   Date = col_date(format = &quot;&quot;),
+##   `HEI US Equity` = col_double(),
+##   `HEI/A US Equity` = col_double(),
+##   `HEI US Equity / HEI/A US Equity` = col_double(),
+##   SMA_21 = col_double(),
+##   SMA_50 = col_double(),
+##   SMA_120 = col_double()
+## )</code></pre>
+<pre class="r"><code>colnames(Heico) &lt;- c(&quot;X1&quot;, &quot;Date&quot;, &quot;UAA&quot;, &quot;UA&quot;, &quot;Ratio&quot;)
+
+HC &lt;- Heico%&gt;%
+select(Date, UAA, UA, Ratio)
+
+HC$Date &lt;- ymd(HC$Date)
+
+#we need to filter the dates for Brown Forman as Under Armour is the youngest data set and only starts on the 23rd of March 2016
+
+HC_avg &lt;- HC %&gt;%
+filter(between(Date, as.Date(&quot;2016-03-23&quot;),as.Date(&quot;2020-10-18&quot;))) %&gt;%
+mutate(day=day(Date), month=month(Date))
+
+HC_final &lt;- HC_avg %&gt;%
+group_by(day, month) %&gt;%
+summarise(average=mean(Ratio))</code></pre>
+<pre><code>## `summarise()` regrouping output by &#39;day&#39; (override with `.groups` argument)</code></pre>
+<pre class="r"><code>John_Wiley &lt;- read_csv(&quot;~/Downloads/Price Data/John Wiley.csv&quot;)</code></pre>
+<pre><code>## Warning: Missing column names filled in: &#39;X1&#39; [1]</code></pre>
+<pre><code>## 
+## ── Column specification ────────────────────────────────────────────────────────
+## cols(
+##   X1 = col_double(),
+##   Date = col_date(format = &quot;&quot;),
+##   `JW/A US Equity` = col_double(),
+##   `JW/B US Equity` = col_double(),
+##   `JW/A US Equity / JW/B US Equity` = col_double(),
+##   SMA_21 = col_double(),
+##   SMA_50 = col_double(),
+##   SMA_120 = col_double()
+## )</code></pre>
+<pre class="r"><code>colnames(John_Wiley) &lt;- c(&quot;X1&quot;, &quot;Date&quot;, &quot;UAA&quot;, &quot;UA&quot;, &quot;Ratio&quot;)
+
+JW &lt;- John_Wiley%&gt;%
+select(Date, UAA, UA, Ratio)
+
+JW$Date &lt;- ymd(JW$Date)
+
+#we need to filter the dates for Brown Forman as Under Armour is the youngest data set and only starts on the 23rd of March 2016
+
+JW_avg &lt;- JW %&gt;%
+filter(between(Date, as.Date(&quot;2016-03-23&quot;),as.Date(&quot;2020-10-18&quot;))) %&gt;%
+mutate(day=day(Date), month=month(Date))
+
+JW_final &lt;- JW_avg %&gt;%
+group_by(day, month) %&gt;%
+summarise(average=mean(Ratio))</code></pre>
+<pre><code>## `summarise()` regrouping output by &#39;day&#39; (override with `.groups` argument)</code></pre>
+<pre class="r"><code>McCormick &lt;- read_csv(&quot;~/Downloads/Price Data/McCormick.csv&quot;)</code></pre>
+<pre><code>## Warning: Missing column names filled in: &#39;X1&#39; [1]</code></pre>
+<pre><code>## 
+## ── Column specification ────────────────────────────────────────────────────────
+## cols(
+##   X1 = col_double(),
+##   Date = col_date(format = &quot;&quot;),
+##   `MKC/V US Equity` = col_double(),
+##   `MKC US Equity` = col_double(),
+##   `MKC/V US Equity / MKC US Equity` = col_double(),
+##   SMA_21 = col_double(),
+##   SMA_50 = col_double(),
+##   SMA_120 = col_double()
+## )</code></pre>
+<pre class="r"><code>colnames(McCormick) &lt;- c(&quot;X1&quot;, &quot;Date&quot;, &quot;UAA&quot;, &quot;UA&quot;, &quot;Ratio&quot;)
+
+MCC &lt;- McCormick%&gt;%
+select(Date, UAA, UA, Ratio)
+
+MCC$Date &lt;- ymd(MCC$Date)
+
+#we need to filter the dates for Brown Forman as Under Armour is the youngest data set and only starts on the 23rd of March 2016
+
+MCC_avg &lt;- MCC %&gt;%
+filter(between(Date, as.Date(&quot;2016-03-23&quot;),as.Date(&quot;2020-10-18&quot;))) %&gt;%
+mutate(day=day(Date), month=month(Date))
+
+MCC_final &lt;- MCC_avg %&gt;%
+group_by(day, month) %&gt;%
+summarise(average=mean(Ratio))</code></pre>
+<pre><code>## `summarise()` regrouping output by &#39;day&#39; (override with `.groups` argument)</code></pre>
+<pre class="r"><code>Molson_Coors &lt;- read_csv(&quot;~/Downloads/Price Data/Molson Coors.csv&quot;)</code></pre>
+<pre><code>## Warning: Missing column names filled in: &#39;X1&#39; [1]</code></pre>
+<pre><code>## 
+## ── Column specification ────────────────────────────────────────────────────────
+## cols(
+##   X1 = col_double(),
+##   Date = col_date(format = &quot;&quot;),
+##   `TAP/A US Equity` = col_double(),
+##   `TAP US Equity` = col_double(),
+##   `TAP/A US Equity / TAP US Equity` = col_double(),
+##   SMA_21 = col_double(),
+##   SMA_50 = col_double(),
+##   SMA_120 = col_double()
+## )</code></pre>
+<pre class="r"><code>colnames(Molson_Coors) &lt;- c(&quot;X1&quot;, &quot;Date&quot;, &quot;UAA&quot;, &quot;UA&quot;, &quot;Ratio&quot;)
+
+MLC &lt;- Molson_Coors%&gt;%
+select(Date, UAA, UA, Ratio)
+
+MLC$Date &lt;- ymd(MLC$Date)
+
+#we need to filter the dates for Brown Forman as Under Armour is the youngest data set and only starts on the 23rd of March 2016
+
+MLC_avg &lt;- MLC %&gt;%
+filter(between(Date, as.Date(&quot;2016-03-23&quot;),as.Date(&quot;2020-10-18&quot;))) %&gt;%
+mutate(day=day(Date), month=month(Date))
+
+MLC_final &lt;- MLC_avg %&gt;%
+group_by(day, month) %&gt;%
+summarise(average=mean(Ratio))</code></pre>
+<pre><code>## `summarise()` regrouping output by &#39;day&#39; (override with `.groups` argument)</code></pre>
+<pre class="r"><code>Pro_Insurance &lt;- read_csv(&quot;~/Downloads/Price Data/Protective Insurance.csv&quot;)</code></pre>
+<pre><code>## Warning: Missing column names filled in: &#39;X1&#39; [1]</code></pre>
+<pre><code>## 
+## ── Column specification ────────────────────────────────────────────────────────
+## cols(
+##   X1 = col_double(),
+##   Date = col_date(format = &quot;&quot;),
+##   `PTVCA US Equity` = col_double(),
+##   `PTVCB US Equity` = col_double(),
+##   `PTVCA US Equity / PTVCB US Equity` = col_double(),
+##   SMA_21 = col_double(),
+##   SMA_50 = col_double(),
+##   SMA_120 = col_double()
+## )</code></pre>
+<pre class="r"><code>colnames(Pro_Insurance) &lt;- c(&quot;X1&quot;, &quot;Date&quot;, &quot;UAA&quot;, &quot;UA&quot;, &quot;Ratio&quot;)
+
+PI &lt;- Pro_Insurance%&gt;%
+select(Date, UAA, UA, Ratio)
+
+PI$Date &lt;- ymd(PI$Date)
+
+#we need to filter the dates for Brown Forman as Under Armour is the youngest data set and only starts on the 23rd of March 2016
+
+PI_avg &lt;- PI %&gt;%
+filter(between(Date, as.Date(&quot;2016-03-23&quot;),as.Date(&quot;2020-10-18&quot;))) %&gt;%
+mutate(day=day(Date), month=month(Date))
+
+PI_final &lt;- PI_avg %&gt;%
+group_by(day, month) %&gt;%
+summarise(average=mean(Ratio))</code></pre>
+<pre><code>## `summarise()` regrouping output by &#39;day&#39; (override with `.groups` argument)</code></pre>
+<pre class="r"><code>Seneca &lt;- read_csv(&quot;~/Downloads/Price Data/Seneca Foods.csv&quot;)</code></pre>
+<pre><code>## Warning: Missing column names filled in: &#39;X1&#39; [1]</code></pre>
+<pre><code>## 
+## ── Column specification ────────────────────────────────────────────────────────
+## cols(
+##   X1 = col_double(),
+##   Date = col_date(format = &quot;&quot;),
+##   `SENEA US Equity` = col_double(),
+##   `SENEB US Equity` = col_double(),
+##   `SENEA US Equity / SENEB US Equity` = col_double(),
+##   SMA_21 = col_double(),
+##   SMA_50 = col_double(),
+##   SMA_120 = col_double()
+## )</code></pre>
+<pre class="r"><code>colnames(Seneca) &lt;- c(&quot;X1&quot;, &quot;Date&quot;, &quot;UAA&quot;, &quot;UA&quot;, &quot;Ratio&quot;)
+
+SC &lt;- Seneca%&gt;%
+select(Date, UAA, UA, Ratio)
+
+SC$Date &lt;- ymd(SC$Date)
+
+#we need to filter the dates for Brown Forman as Under Armour is the youngest data set and only starts on the 23rd of March 2016
+
+SC_avg &lt;- SC %&gt;%
+filter(between(Date, as.Date(&quot;2016-03-23&quot;),as.Date(&quot;2020-10-18&quot;))) %&gt;%
+mutate(day=day(Date), month=month(Date))
+
+SC_final &lt;- SC_avg %&gt;%
+group_by(day, month) %&gt;%
+summarise(average=mean(Ratio))</code></pre>
+<pre><code>## `summarise()` regrouping output by &#39;day&#39; (override with `.groups` argument)</code></pre>
+<pre class="r"><code>Zillow &lt;- read_csv(&quot;~/Downloads/Price Data/Zillow.csv&quot;)</code></pre>
+<pre><code>## Warning: Missing column names filled in: &#39;X1&#39; [1]</code></pre>
+<pre><code>## 
+## ── Column specification ────────────────────────────────────────────────────────
+## cols(
+##   X1 = col_double(),
+##   Date = col_date(format = &quot;&quot;),
+##   `ZG US Equity` = col_double(),
+##   `Z US Equity` = col_double(),
+##   `ZG US Equity / Z US Equity` = col_double(),
+##   SMA_21 = col_double(),
+##   SMA_50 = col_double(),
+##   SMA_120 = col_double()
+## )</code></pre>
+<pre class="r"><code>colnames(Zillow) &lt;- c(&quot;X1&quot;, &quot;Date&quot;, &quot;UAA&quot;, &quot;UA&quot;, &quot;Ratio&quot;)
+
+ZW &lt;- Zillow%&gt;%
+select(Date, UAA, UA, Ratio)
+
+ZW$Date &lt;- ymd(ZW$Date)
+
+#we need to filter the dates for Brown Forman as Under Armour is the youngest data set and only starts on the 23rd of March 2016
+
+ZW_avg &lt;- ZW %&gt;%
+filter(between(Date, as.Date(&quot;2016-03-23&quot;),as.Date(&quot;2020-10-18&quot;))) %&gt;%
+mutate(day=day(Date), month=month(Date))
+
+ZW_final &lt;- ZW_avg %&gt;%
+group_by(day, month) %&gt;%
+summarise(average=mean(Ratio))</code></pre>
+<pre><code>## `summarise()` regrouping output by &#39;day&#39; (override with `.groups` argument)</code></pre>
+<pre class="r"><code>glimpse(ZW_final)</code></pre>
+<pre><code>## Rows: 362
+## Columns: 3
+## Groups: day [31]
+## $ day     &lt;int&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2…
+## $ month   &lt;dbl&gt; 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9…
+## $ average &lt;dbl&gt; 1.0052000, 0.9919333, 0.9986333, 0.9903250, 1.0069500, 1.0010…</code></pre>
+<pre class="r"><code>library(data.table)</code></pre>
+<pre><code>## 
+## Attaching package: &#39;data.table&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:lubridate&#39;:
+## 
+##     hour, isoweek, mday, minute, month, quarter, second, wday, week,
+##     yday, year</code></pre>
+<pre><code>## The following objects are masked from &#39;package:dplyr&#39;:
+## 
+##     between, first, last</code></pre>
+<pre><code>## The following object is masked from &#39;package:purrr&#39;:
+## 
+##     transpose</code></pre>
+<pre class="r"><code>library(abind)
+table &lt;- do.call(&quot;rbind&quot;,list(HC_final, JW_final, MCC_final, BF_final, BH_final, CB_final, CF_final, GG_final, MLC_final, PI_final, SC_final, UA_final, ZW_final))
+
+new_table &lt;- table %&gt;%
+group_by(day, month) %&gt;%
+summarise(avg=mean(average))</code></pre>
+<pre><code>## `summarise()` regrouping output by &#39;day&#39; (override with `.groups` argument)</code></pre>
+<pre class="r"><code>new_table$Date &lt;- as.Date(paste(new_table$month , new_table$day , sep = &quot;.&quot; )  , format = &quot;%m.%d&quot; )
+
+glimpse(new_table)</code></pre>
+<pre><code>## Rows: 362
+## Columns: 4
+## Groups: day [31]
+## $ day   &lt;int&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, …
+## $ month &lt;dbl&gt; 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9, …
+## $ avg   &lt;dbl&gt; 1.018431, 1.016304, 1.022133, 1.035679, 1.029436, 1.049925, 1.0…
+## $ Date  &lt;date&gt; 2020-02-01, 2020-03-01, 2020-04-01, 2020-05-01, 2020-06-01, 20…</code></pre>
+<pre class="r"><code>range(new_table$avg)</code></pre>
+<pre><code>## [1] 0.9996106 1.0569074</code></pre>
+<pre class="r"><code>new_table</code></pre>
+<pre><code>## # A tibble: 362 x 4
+## # Groups:   day [31]
+##      day month   avg Date      
+##    &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;date&gt;    
+##  1     1     2  1.02 2020-02-01
+##  2     1     3  1.02 2020-03-01
+##  3     1     4  1.02 2020-04-01
+##  4     1     5  1.04 2020-05-01
+##  5     1     6  1.03 2020-06-01
+##  6     1     7  1.05 2020-07-01
+##  7     1     8  1.02 2020-08-01
+##  8     1     9  1.02 2020-09-01
+##  9     1    10  1.04 2020-10-01
+## 10     1    11  1.02 2020-11-01
+## # … with 352 more rows</code></pre>
+<pre class="r"><code>ggplot(new_table, aes(x=Date, y=avg, group=1)) + geom_line() + theme_minimal() + scale_x_date(date_labels = &quot;%b&quot;, date_breaks = &quot;month&quot;, name = &quot;Month&quot;, limits=as.Date(c(&quot;2020-01-01&quot;, &quot;2020-12-31&quot;))) +  theme(axis.title.x=element_blank(),plot.title = element_text(size=10, face=&quot;bold&quot;), plot.subtitle = element_text(size=9), axis.title = element_text(size=8)) + labs(title=&quot;Average Ratio for each Day of the Month&quot;, subtitle=&quot;Calculated across Sample Companies starting from 23rd of March 2016 to Date&quot;, y=&quot;Voting/Non-Voting Share Class&quot;)</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+<blockquote>
+<p>The daily historical average ratio varies greatly on a daily basis ranging between 0.9996 and 1.0569. Ratios peak and decline multiple times throughout the month thus enabling investors to close multiple long/short positions throughout the month. Particularly relevant is the visual observation that ratios don’t maintain peaks for a long amount of time but bounce back down fairly quickly, which suggests that once the investor has identified a peak and sets up the long/short position, the ratio has quickly declined in the past, thus returning positive gains to the investor, who closes once a dip has been reached. The chart also suggests that investors could hold the long/short position for a longer period of time than the next dip, and close positions on any subsequent dip, as ratios show little movement above and beyond the total annual range. However, past performance doesn’t predict future performance, therefore the chart may look different in the future than it did with historical data.</p>
+</blockquote>

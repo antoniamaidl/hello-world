@@ -1,0 +1,79 @@
+---
+categories:
+- ""
+- ""
+date: "2020-10-01"
+description: TfL Bikes
+draft: false
+image: pic10.jpg
+keywords: ""
+slug: blog6
+title: Bikes
+---
+
+
+
+<p>For this project we will download data about the TfL bike rental in London. We create a chart showing the mean rentals for the years between 2015 and 2019. We then visualise the change from the average rentals for each year. Red are below, green are above. Look how red Corona made the average! But as soon as lockdown was over, people appeared to be crazy for TfL bikes and we see a big spike way above average.</p>
+<pre class="r"><code>url &lt;- &quot;https://data.london.gov.uk/download/number-bicycle-hires/ac29363e-e0cb-47cc-a97a-e216d900a6b0/tfl-daily-cycle-hires.xlsx&quot;
+
+# Download TFL data to temporary file
+httr::GET(url, write_disk(bike.temp &lt;- tempfile(fileext = &quot;.xlsx&quot;)))</code></pre>
+<pre><code>## Response [https://airdrive-secure.s3-eu-west-1.amazonaws.com/london/dataset/number-bicycle-hires/2020-09-18T09%3A06%3A54/tfl-daily-cycle-hires.xlsx?X-Amz-Algorithm=AWS4-HMAC-SHA256&amp;X-Amz-Credential=AKIAJJDIMAIVZJDICKHA%2F20201019%2Feu-west-1%2Fs3%2Faws4_request&amp;X-Amz-Date=20201019T105501Z&amp;X-Amz-Expires=300&amp;X-Amz-Signature=de66150202dc6909fe36a789074b869a60e8d2b08620afc046c0d2cd64b3af9b&amp;X-Amz-SignedHeaders=host]
+##   Date: 2020-10-19 10:55
+##   Status: 200
+##   Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+##   Size: 165 kB
+## &lt;ON DISK&gt;  /var/folders/n5/zdwb0k2d78zf6__qm50684pr0000gn/T//RtmpmkwosJ/file5dcf2ef2165e.xlsx</code></pre>
+<pre class="r"><code># Use read_excel to read it as dataframe
+bike0 &lt;- read_excel(bike.temp,
+                   sheet = &quot;Data&quot;,
+                   range = cell_cols(&quot;A:B&quot;))
+
+# change dates to get year, month, and week
+bike &lt;- bike0 %&gt;% 
+  clean_names() %&gt;% 
+  rename (bikes_hired = number_of_bicycle_hires) %&gt;% 
+  mutate (year = year(day),
+          month = lubridate::month(day, label = TRUE),
+          week = isoweek(day))</code></pre>
+<pre class="r"><code>monthlymean_bike_data &lt;- bike %&gt;%
+filter(between(year, &quot;2015&quot;, &quot;2019&quot;)) %&gt;%
+group_by(month) %&gt;%
+summarise(totalmean_rental = mean(bikes_hired)) %&gt;%
+ungroup()</code></pre>
+<pre><code>## `summarise()` ungrouping output (override with `.groups` argument)</code></pre>
+<pre class="r"><code>mean_bike_data &lt;- bike %&gt;%
+  filter(between(year, &quot;2015&quot;, &quot;2020&quot;)) %&gt;%
+ group_by(month, year) %&gt;%
+summarise(mean_rental = mean(bikes_hired)) %&gt;%
+ungroup() </code></pre>
+<pre><code>## `summarise()` regrouping output by &#39;month&#39; (override with `.groups` argument)</code></pre>
+<pre class="r"><code>total_data &lt;- merge(monthlymean_bike_data, mean_bike_data, by = &quot;month&quot;, all=TRUE) %&gt;%
+  mutate(difference_monthly = mean_rental-totalmean_rental)
+
+
+ggplot(total_data, aes(x=month,y=mean_rental, group = 1)) + geom_ribbon(total_data, mapping= aes(ymin=totalmean_rental, ymax=totalmean_rental + ifelse(difference_monthly &lt; 0, difference_monthly, 0)), fill=&quot;indianred3&quot;, alpha=0.5) + geom_ribbon(total_data, mapping= aes(ymin=totalmean_rental, ymax=totalmean_rental + ifelse(difference_monthly &lt; 0, 0, difference_monthly)), fill=&quot;palegreen3&quot;, alpha=0.5) + geom_line(size=0.2) + geom_line(total_data, mapping= aes(y=totalmean_rental), colour=&quot;blue&quot;, size=0.3) + facet_wrap(~ year) + theme(legend.position =&quot;none&quot;) + theme_minimal(base_size = 6) + labs(title=&quot;Monthly changes in TfL bike rentals&quot;, subtitle = &quot;Change from monthly average shown in blue\n and calculated between 2015-2019&quot;, caption = &quot;Source: TfL, London Data Store&quot;, y= &quot;Bike rentals&quot;) + theme(legend.position =&quot;none&quot;, axis.title.x=element_blank(), plot.title = element_text(size=6.5, face=&quot;bold&quot;))</code></pre>
+<p><img src="./blog6_files/figure-html/unnamed-chunk-1-1.png" width="672" />
+Let’s create a chart that looks at the percentage changes from the expected level of weekly rentals. The two grey shaded rectangles correspond to the second (weeks 14-26) and fourth (weeks 40-52) quarters.</p>
+<pre class="r"><code>bike_week &lt;- bike %&gt;%
+  mutate(week=week(day))
+
+weeklymean_bike_data &lt;- bike_week %&gt;%
+filter(between(year, &quot;2015&quot;, &quot;2019&quot;)) %&gt;%
+group_by(week) %&gt;%
+summarise(totalweeklymean_weekly = mean(bikes_hired)) %&gt;%
+ungroup()</code></pre>
+<pre><code>## `summarise()` ungrouping output (override with `.groups` argument)</code></pre>
+<pre class="r"><code>weeklyearmean_bike_data &lt;- bike %&gt;%
+  filter(between(year, &quot;2015&quot;, &quot;2020&quot;)) %&gt;%
+ group_by(week, year) %&gt;%
+summarise(weeklymeanyear_rental = mean(bikes_hired)) %&gt;%
+ungroup() </code></pre>
+<pre><code>## `summarise()` regrouping output by &#39;week&#39; (override with `.groups` argument)</code></pre>
+<pre class="r"><code>weekly_total_data &lt;- full_join(weeklymean_bike_data, weeklyearmean_bike_data, by = &quot;week&quot;) %&gt;%
+mutate(percentage_change = (((weeklymeanyear_rental/totalweeklymean_weekly))-1)*100)
+
+ggplot(weekly_total_data, aes(x=week, y=percentage_change, group = 1))  + geom_rect(data=weekly_total_data, aes(xmin = 14,xmax = 26,ymin = -Inf, ymax = Inf), fill= &quot;lightgrey&quot;, alpha=0.01) + geom_rect(aes(xmin = 40,xmax = 52,ymin = -Inf, ymax = Inf), fill= &quot;lightgrey&quot;, alpha=0.01)  + geom_line(size=0.2) + geom_ribbon(weekly_total_data, mapping= aes(ymin=0, ymax=0 + ifelse(percentage_change &gt; 0, percentage_change, 0)), fill=&quot;palegreen3&quot;, alpha=0.5) + geom_ribbon(weekly_total_data, mapping= aes(ymin=percentage_change, ymax=0 + ifelse(percentage_change &lt; 0, 0, percentage_change)), fill=&quot;indianred3&quot;, alpha=0.5) + facet_wrap(~ year) + theme(legend.position =&quot;none&quot;, axis.title.y=element_blank()) + labs(title=&quot;Weekly change in TfL bike rentals&quot;, subtitle = &quot;% change from weekly averages\n calculated between 2015-2019&quot;, caption = &quot;Source: TfL, London Data Store&quot;, x= &quot;week&quot;) + theme(legend.position =&quot;none&quot;, axis.title.x=element_blank(),axis.text.y=element_blank(), plot.title = element_text(size=6.5, face=&quot;bold&quot;)) + theme(legend.position =&quot;none&quot;) + theme_minimal(base_size = 6) + scale_x_continuous(breaks=c(13, 26, 39, 53)) +  
+   geom_rug(aes(colour=ifelse(weeklymeanyear_rental&gt;=totalweeklymean_weekly,&quot;&gt;=0&quot;,&quot;&lt;0&quot;)),sides=&quot;b&quot;, alpha=0.5)+ scale_colour_manual(values=c(&quot;#CB454A&quot;,&quot;#7DCD85&quot;),name=&quot;Actual vs Expected &quot;, guide=FALSE) + ylab(NULL)</code></pre>
+<p><img src="./blog6_files/figure-html/tfl_percent_change-1.png" width="100%" />
+Looking at the chart, we can conclude that there isn’t a direct trend in rentals throughout years, maybe it’s the weather, that always changes. However, 2020 the lockdown had an enormous effect on rentals, and right after lockdown eased there is a huge spike, as people enjoy their new “freedom” outside.</p>

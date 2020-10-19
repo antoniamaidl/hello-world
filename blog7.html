@@ -1,0 +1,95 @@
+---
+categories:
+- ""
+- ""
+date: "2020-10-01"
+description: Atheism around the World
+draft: false
+image: pic08.jpg
+keywords: ""
+slug: blog7
+title: Analysis of Atheism
+---
+
+
+
+<pre class="r"><code># Import atheism data
+atheism_data &lt;- read_csv(here::here(&#39;data&#39;, &#39;atheism.csv&#39;))</code></pre>
+<pre><code>## 
+## ── Column specification ────────────────────────────────────────────────────────
+## cols(
+##   nationality = col_character(),
+##   response = col_character(),
+##   year = col_double()
+## )</code></pre>
+<pre class="r"><code>#changing input to if response is atheist, then &quot;yes&quot; for non-atheist &quot;no&quot;
+clean_atheism2012 &lt;- atheism_data %&gt;%
+filter(year==2012) %&gt;%
+group_by(nationality, response) %&gt;%
+summarise(count = n()) %&gt;%
+pivot_wider(names_from = response, values_from = count) %&gt;%
+mutate_if(is.numeric, funs(ifelse(is.na(.), 0, .))) </code></pre>
+<pre><code>## `summarise()` regrouping output by &#39;nationality&#39; (override with `.groups` argument)</code></pre>
+<pre><code>## `mutate_if()` ignored the following grouping variables:
+## Column `nationality`</code></pre>
+<pre><code>## Warning: `funs()` is deprecated as of dplyr 0.8.0.
+## Please use a list of either functions or lambdas: 
+## 
+##   # Simple named list: 
+##   list(mean = mean, median = median)
+## 
+##   # Auto named with `tibble::lst()`: 
+##   tibble::lst(mean, median)
+## 
+##   # Using lambdas
+##   list(~ mean(., trim = .2), ~ median(., na.rm = TRUE))
+## This warning is displayed once every 8 hours.
+## Call `lifecycle::last_warnings()` to see where this warning was generated.</code></pre>
+<pre class="r"><code>colnames(clean_atheism2012) &lt;- c(&quot;country&quot;,&quot;no_atheist&quot;, &quot;atheist&quot;) 
+
+ratio_atheism &lt;- clean_atheism2012 %&gt;%
+summarise(ratio=(atheist)/(no_atheist + atheist)) %&gt;%
+arrange(desc(ratio)) </code></pre>
+<pre><code>## `summarise()` ungrouping output (override with `.groups` argument)</code></pre>
+<pre class="r"><code>ratio_plot &lt;- ggplot(ratio_atheism, aes(x=reorder(country, -ratio), y=ratio)) + geom_point()+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + labs(title=&quot;Ratio of Atheists per Country in 2012&quot;, y=&quot;Atheist ratio out of total survey responders&quot;) + theme(axis.title.x=element_blank(),plot.title = element_text(size=12, face=&quot;bold&quot;), axis.title = element_text(size=6)) 
+ratio_plot</code></pre>
+<p><img src="./blog7_files/figure-html/Atheism-1.png" width="672" /></p>
+<pre class="r"><code>atheism_germany &lt;- atheism_data %&gt;%
+filter(nationality==&quot;Germany&quot;) %&gt;%
+  group_by(response, year) %&gt;%
+  summarise(count=n())</code></pre>
+<pre><code>## `summarise()` regrouping output by &#39;response&#39; (override with `.groups` argument)</code></pre>
+<pre class="r"><code>bp_germany&lt;- ggplot(atheism_germany, aes(x=&quot;&quot;, y=count, fill=response))+
+geom_bar(width = 1, stat = &quot;identity&quot;) + facet_wrap(~ year)
+bp_germany</code></pre>
+<p><img src="./blog7_files/figure-html/Atheism-2.png" width="672" /></p>
+<pre class="r"><code>atheism_italy &lt;- atheism_data %&gt;%
+filter(nationality==&quot;Italy&quot;) %&gt;%
+  group_by(response, year) %&gt;%
+  summarise(count = n())</code></pre>
+<pre><code>## `summarise()` regrouping output by &#39;response&#39; (override with `.groups` argument)</code></pre>
+<pre class="r"><code>bp_italy&lt;- ggplot(atheism_italy, aes(x=&quot;&quot;, y=count, fill=response))+
+geom_bar(width = 1, stat = &quot;identity&quot;) + facet_wrap(~ year)
+bp_italy</code></pre>
+<p><img src="./blog7_files/figure-html/Atheism-3.png" width="672" /></p>
+<pre><code>## 
+## ── Column specification ────────────────────────────────────────────────────────
+## cols(
+##   .default = col_character(),
+##   samplesize = col_double(),
+##   weight = col_double(),
+##   influence = col_double(),
+##   approve = col_double(),
+##   disapprove = col_double(),
+##   adjusted_approve = col_double(),
+##   adjusted_disapprove = col_double(),
+##   tracking = col_logical(),
+##   poll_id = col_double(),
+##   question_id = col_double()
+## )
+## ℹ Use `spec()` for the full column specifications.</code></pre>
+<pre><code>## Warning: hms, hm and ms usage is deprecated, please use HMS, HM or MS instead.
+## Deprecated in version &#39;1.5.6&#39;.</code></pre>
+<pre><code>## Warning in qt(0.975, count - 1): NaNs produced</code></pre>
+<pre><code>## `summarise()` regrouping output by &#39;year&#39; (override with `.groups` argument)</code></pre>
+<p>Note that the <code>echo = FALSE</code> parameter was added to the code chunk to prevent printing of the R code that generated the plot.</p>

@@ -1,0 +1,85 @@
+---
+categories:
+- ""
+- ""
+date: "2020-10-01"
+description: Atheism around the World
+draft: false
+image: pic08.jpg
+keywords: ""
+slug: blog7
+title: Analysis of Atheism
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse) 
+library(mosaic)
+library(ggthemes)
+library(lubridate)
+library(here)
+library(skimr)
+library(janitor)
+library(httr)
+library(readxl)
+library(vroom)
+```
+
+Let's have a look of the outcome of a survey analysing atheism around the world. We want to create a plot with the ratio of atheists in a given country in 2012. For that we first need to re-design the data table to get the survey answer as actual column with number of survey responders per column. We do that with "pivot_wider". Then we mutate the data set, as there a few countries with no atheists (at least according to the survey :) ), overwriting "na" with 0. 
+
+Then we create a new nice data set called clean_atheism2012. Afterwards, we calculate the ratio and plot!
+
+```{r Atheism}
+# Import atheism data
+atheism_data <- read_csv(here::here('data', 'atheism.csv'))
+
+#changing input to if response is atheist, then "yes" for non-atheist "no"
+clean_atheism2012 <- atheism_data %>%
+filter(year==2012) %>%
+group_by(nationality, response) %>%
+summarise(count = n()) %>%
+pivot_wider(names_from = response, values_from = count) %>%
+mutate_if(is.numeric, funs(ifelse(is.na(.), 0, .))) 
+  
+colnames(clean_atheism2012) <- c("country","no_atheist", "atheist") 
+
+ratio_atheism <- clean_atheism2012 %>%
+summarise(ratio=(atheist)/(no_atheist + atheist)) %>%
+arrange(desc(ratio)) 
+
+ratio_plot <- ggplot(ratio_atheism, aes(x=reorder(country, -ratio), y=ratio)) + geom_point()+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + labs(title="Ratio of Atheists per Country in 2012", y="Atheist ratio out of total survey responders") + theme(axis.title.x=element_blank(),plot.title = element_text(size=12, face="bold"), axis.title = element_text(size=6)) 
+ratio_plot
+
+```
+> Surprisingly, it's only China, Japan, Czech Republic and France that have above 20% of atheists. Most countries that follow afterwards are mainly European countries. It would be interesting to see how results would look like in 2020! 
+
+
+I'm German, so let's have a look at the development of atheism in Germany from 2005 to 2012. To visualise, we create two boxplots, this makes it pretty easy to see!
+```{r Atheism}
+atheism_germany <- atheism_data %>%
+filter(nationality=="Germany") %>%
+  group_by(response, year) %>%
+  summarise(count=n())
+
+bp_germany<- ggplot(atheism_germany, aes(x="", y=count, fill=response))+
+geom_bar(width = 1, stat = "identity") + facet_wrap(~ year) + labs(title="Development of atheism in Germany", subtitle="From 2005 to 2012", y="Number of survey responders") +  theme(axis.title.x=element_blank(),plot.title = element_text(size=12, face="bold"), axis.title = element_text(size=10)) 
+bp_germany
+```
+> Atheism increased by quite a bit between 2005 to 2012 in Germany. Looking at the boxplot, it looks like around 25 out of 500 survey responders became atheists, that's 5%, leading to a total of around 15%!
+
+
+Now, thinking of a religious country in Europe, Italy comes to my mind. Let's have a look at Italy!
+
+```{r Atheism}
+atheism_italy <- atheism_data %>%
+filter(nationality=="Italy") %>%
+  group_by(response, year) %>%
+  summarise(count = n())
+
+bp_italy<- ggplot(atheism_italy, aes(x="", y=count, fill=response))+
+geom_bar(width = 1, stat = "identity") + facet_wrap(~ year)  + labs(title="Development of atheism in Italy", subtitle="From 2005 to 2012", y="Number of survey responders") +  theme(axis.title.x=element_blank(),plot.title = element_text(size=12, face="bold"), axis.title = element_text(size=10)) 
+bp_italy
+```
+>In comparison to Germany, fewer people were atheists in 2005. Looking at the boxplot, probably around 60 suruvey responders. To 2012, this also only increased partially. Probably to a total number of 75. That's a total of 7.5%, so around half of Germany's rate.
+
